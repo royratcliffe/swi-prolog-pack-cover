@@ -27,7 +27,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 :- use_module(library(aggregate), [aggregate_all/3]).
-:- use_module(library(apply), [maplist/3, convlist/3]).
+:- use_module(library(apply), [maplist/3, convlist/3, exclude/3]).
 :- use_module(library(filesex), [relative_file_name/3]).
 :- use_module(library(lists), [member/2]).
 :- use_module(library(option), [option/2]).
@@ -40,6 +40,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 :- use_module(library(http/json), [atom_json_term/3]).
 :- use_module(library(plunit), [load_test_files/1]).
 :- use_module(library(settings), [setting/4, setting/2]).
+
 :- ensure_loaded(library(http/http_json)).
 
 :- setting(runner_os, atom, env('RUNNER_OS', ''),
@@ -188,9 +189,31 @@ file_cover(File, Succeeded, Failed,
     clean(NotCovered, NotCoveredLength),
     clean(FailedInFile, FailedInFileLength).
 
+%!  clean(Clauses, Length) is det.
+%
+%   Cleans the Clauses and counts the number of non-dirty clauses as
+%   Length where dirty includes:
+%
+%       - `user`, `plunit` or `prolog_cover` clauses;
+%       - 'unit test' head clauses.
+%
+%   The latter excludes the test heads that otherwise skew the total
+%   number of clauses upwards and therefore incorrectly reduces the
+%   coverage percentage.
+
 clean(Clauses, Length) :-
-    prolog_cover:clean_set(Clauses, CleanClauses),
+    prolog_cover:clean_set(Clauses, CleanClauses0),
+    exclude(is_dirty, CleanClauses0, CleanClauses),
     length(CleanClauses, Length).
+
+is_dirty(Clause) :-
+    clause_property(Clause, predicate(Predicate)),
+    dirty_predicate(Predicate).
+
+dirty_predicate(user:_/_) :- !.
+dirty_predicate(plunit:_/_) :- !.
+dirty_predicate(prolog_cover:_/_) :- !.
+dirty_predicate(_:'unit test'/_).
 
 %!  subdir(+Dir, +File, -Rel) is semidet.
 %
