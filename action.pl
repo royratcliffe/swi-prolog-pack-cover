@@ -26,18 +26,18 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-:- autoload(library(aggregate), [aggregate_all/3]).
-:- autoload(library(apply), [maplist/3, convlist/3]).
-:- autoload(library(filesex), [relative_file_name/3]).
-:- autoload(library(lists), [member/2]).
-:- autoload(library(option), [option/2]).
-:- autoload(library(ordsets),
-            [ord_intersect/2, ord_intersection/3, ord_subtract/3]).
-:- autoload(library(prolog_pack), [pack_property/2]).
-:- autoload(library(test_cover), [show_coverage/1]).
-:- autoload(library(url), [parse_url/2]).
-:- autoload(library(http/http_client), [http_get/3]).
-:- autoload(library(http/json), [atom_json_term/3]).
+:- use_module(library(aggregate), [aggregate_all/3]).
+:- use_module(library(apply), [maplist/3, convlist/3]).
+:- use_module(library(filesex), [relative_file_name/3]).
+:- use_module(library(lists), [member/2]).
+:- use_module(library(option), [option/2]).
+:- use_module(library(ordsets),
+              [ord_intersect/2, ord_intersection/3, ord_subtract/3]).
+:- use_module(library(prolog_pack), [pack_property/2]).
+:- use_module(library(test_cover), [show_coverage/1]).
+:- use_module(library(url), [parse_url/2]).
+:- use_module(library(http/http_client), [http_get/3]).
+:- use_module(library(http/json), [atom_json_term/3]).
 :- use_module(library(plunit), [load_test_files/1]).
 :- use_module(library(settings), [setting/4, setting/2]).
 
