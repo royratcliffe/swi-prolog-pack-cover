@@ -27,14 +27,24 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 :- autoload(library(aggregate), [aggregate_all/3]).
-:- autoload(library(apply), [convlist/3]).
+:- autoload(library(apply), [maplist/3, convlist/3]).
 :- autoload(library(filesex), [relative_file_name/3]).
 :- autoload(library(lists), [member/2]).
+:- autoload(library(option), [option/2]).
 :- autoload(library(ordsets),
             [ord_intersect/2, ord_intersection/3, ord_subtract/3]).
 :- autoload(library(prolog_pack), [pack_property/2]).
 :- autoload(library(test_cover), [show_coverage/1]).
+:- autoload(library(url), [parse_url/2]).
+:- autoload(library(http/http_client), [http_get/3]).
+:- autoload(library(http/json), [atom_json_term/3]).
 :- use_module(library(plunit), [load_test_files/1]).
+:- use_module(library(settings), [setting/4, setting/2]).
+
+:- setting(gist_id, atom, env('COVFAIL_GISTID', ''),
+           'Covered and failed-in-file Gist identifier').
+:- setting(access_token, atom, env('GHAPI_PAT', ''),
+           'GitHub API personal access token').
 
 :- initialization(main, main).
 
@@ -60,9 +70,36 @@ main :-
         CoveredPercent is 100 - NotCoveredPercent,
         format('Not covered:~t~f~40|%~n', [NotCoveredPercent]),
         format('Failed in file:~t~f~40|%~n', [FailedInFilePercent]),
-        format('Covered:~t~f~40|%~n', [CoveredPercent])
+        format('Covered:~t~f~40|%~n', [CoveredPercent]),
+        ignore(shield(CoveredPercent, FailedInFilePercent))
     ;   true
     ).
+
+shield(Cov, Fail) :-
+    setting(gist_id, GistID),
+    GistID \== '',
+    !,
+    shield_files([cov-Cov, fail-Fail], Files),
+    ghapi_update_gist(GistID, json(json([files=Files])), _, []).
+
+shield_files(Pairs, json(Files)) :- maplist(shield_file, Pairs, Files).
+
+shield_file(Label-Percent, File=json([content=Content])) :-
+    atom_concat(Label, '.json', File),
+    format(atom(Message), '~1f%', [Percent]),
+    shield_color(Percent, Color),
+    atom_json_term(Content, json([ schemaVersion=1,
+                                   label=Label,
+                                   message=Message,
+                                   color=Color
+                                 ]), []),
+    format('raw/~s~n', [File]).
+
+shield_color(Percent, red) :- Percent < 20, !.
+shield_color(Percent, orange) :- Percent < 40, !.
+shield_color(Percent, yellow) :- Percent < 60, !.
+shield_color(Percent, yellowgreen) :- Percent < 80, !.
+shield_color(_, green).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -146,3 +183,76 @@ clean(Clauses, Length) :-
 subdir(Dir, File, Rel) :-
     relative_file_name(File, Dir, Rel),
     \+ sub_atom(Rel, 0, _, _, (..)).
+
+%!  ghapi_update_gist(+GistID, +Data, -Reply, +Options) is det.
+%
+%   Updates a Gist by its unique identifier. Data is the patch payload
+%   as a JSON object, or dictionary if you include json_object(dict) in
+%   Options. Reply is the updated Gist in JSON on success.
+%
+%   The example below illustrates a Gist update using a JSON term.
+%   Notice the doubly-nested `json/1` terms. The first sets up the HTTP
+%   request for JSON while the inner term specifies a JSON _object_
+%   payload. In this example, the update adds or replaces the `cov.json`
+%   file with content of "{}" as serialised JSON. Update requests for
+%   Gists have a `files` object with a nested filename-object comprising
+%   a content string for the new contents of the file.
+%
+%       ghapi_update_gist(
+%           ec92ac84832950815861d35c2f661953,
+%           json(json([ files=json([ 'cov.json'=json([ content='{}'
+%                                                    ])
+%                                  ])
+%                     ])), _, []).
+%
+%   @see https://docs.github.com/en/rest/reference/gists#update-a-gist
+
+ghapi_update_gist(GistID, Data, Reply, Options) :-
+    ghapi_get([gists, GistID], Reply, [method(patch), post(Data)|Options]).
+
+%!  ghapi_get(+PathComponents, +Data, +Options) is det.
+%
+%   Accesses the GitHub API. Supports JSON terms and dictionaries. For
+%   example, the following goal accesses the GitHub Gist API looking for
+%   a particular Gist by its identifier and unifies `A` with a JSON term
+%   representing the Gist's current contents and state.
+%
+%       ghapi_get([gists, ec92ac84832950815861d35c2f661953], A, []).
+%
+%   Supports all HTTP methods despite the predicate name. The "get"
+%   mirrors the underlying http_get/3 method which also supports all
+%   methods. POST and PATCH send data using the `post/1` option and
+%   override the default HTTP verb using the `method/1` option.
+%   Similarly here.
+%
+%   Handles authentication via settings, and from the system environment
+%   indirectly. Option `ghapi_access_token/1` overrides both. Order of
+%   overriding proceeds as: option, setting, environment, none. Empty
+%   atom counts as none.
+%
+%   Abstracts away the path using path components. Argument
+%   PathComponents is an atomic list specifying the URL path.
+
+ghapi_get(PathComponents, Data, Options) :-
+    ghapi_get_options(Options_, Options),
+    atomic_list_concat([''|PathComponents], /, Path),
+    parse_url(URL, [protocol(https), host('api.github.com'), path(Path)]),
+    http_get(URL, Data,
+             [ request_header('Accept'='application/vnd.github.v3+json')
+             | Options_
+             ]).
+
+ghapi_get_options([ request_header('Authorization'=Authorization)
+                  | Options
+                  ], Options) :-
+    ghapi_access_token(AccessToken, Options),
+    AccessToken \== '',
+    !,
+    format(atom(Authorization), 'token ~s', [AccessToken]).
+ghapi_get_options(Options, Options).
+
+ghapi_access_token(AccessToken, Options) :-
+    option(ghapi_access_token(AccessToken), Options),
+    !.
+ghapi_access_token(AccessToken, _Options) :-
+    setting(access_token, AccessToken).
