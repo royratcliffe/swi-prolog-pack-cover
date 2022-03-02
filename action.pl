@@ -42,8 +42,15 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 :- use_module(library(settings), [setting/4, setting/2]).
 :- ensure_loaded(library(http/http_json)).
 
+:- setting(runner_os, atom, env('RUNNER_OS', ''),
+           'GitHub runner operating system').
+
+:- setting(coverage_os, atom, env('COVERAGE_OS', 'Linux'),
+           'Runner OS to use for updating coverage Gist').
+
 :- setting(gist_id, atom, env('COVFAIL_GISTID', ''),
            'Covered and failed-in-file Gist identifier').
+
 :- setting(access_token, atom, env('GHAPI_PAT', ''),
            'GitHub API personal access token').
 
@@ -72,16 +79,24 @@ main :-
         format('Not covered:~t~f~40|%~n', [NotCoveredPercent]),
         format('Failed in file:~t~f~40|%~n', [FailedInFilePercent]),
         format('Covered:~t~f~40|%~n', [CoveredPercent]),
-        ignore(shield(CoveredPercent, FailedInFilePercent))
+        shield(CoveredPercent, FailedInFilePercent)
     ;   true
     ).
 
 shield(Cov, Fail) :-
+    setting(runner_os, RunnerOS),
+    setting(coverage_os, CoverageOS),
+    (   RunnerOS == CoverageOS
+    ->  shield(Cov, Fail, _)
+    ;   true
+    ).
+
+shield(Cov, Fail, Reply) :-
     setting(gist_id, GistID),
     GistID \== '',
     !,
     shield_files([cov-Cov, fail-Fail], Files),
-    ghapi_update_gist(GistID, json(json([files=Files])), _, []).
+    ghapi_update_gist(GistID, json(json([files=Files])), Reply, []).
 
 shield_files(Pairs, json(Files)) :- maplist(shield_file, Pairs, Files).
 
