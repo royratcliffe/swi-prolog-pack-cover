@@ -45,8 +45,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 :- setting(runner_os, atom, env('RUNNER_OS', ''),
            'GitHub runner operating system').
 
-:- setting(coverage_os, atom, env('COVERAGE_OS', 'Linux'),
-           'Runner OS to use for updating coverage Gist').
+:- setting(shield_os, atom, env('SHIELD_OS', 'Linux'),
+           'Runner OS to use for updating shield Gist').
 
 :- setting(gist_id, atom, env('COVFAIL_GISTID', ''),
            'Covered and failed-in-file Gist identifier').
@@ -85,8 +85,8 @@ main :-
 
 shield(Cov, Fail) :-
     setting(runner_os, RunnerOS),
-    setting(coverage_os, CoverageOS),
-    (   RunnerOS == CoverageOS
+    setting(shield_os, ShieldOS),
+    (   RunnerOS == ShieldOS
     ->  shield(Cov, Fail, _)
     ;   true
     ).
