@@ -37,7 +37,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 :- use_module(library(test_cover), [show_coverage/1]).
 :- use_module(library(url), [parse_url/2]).
 :- use_module(library(http/http_client), [http_get/3]).
-:- use_module(library(http/json), [atom_json_term/3]).
+:- use_module(library(http/json), [atom_json_term/3, json_write_dict/3]).
 :- use_module(library(plunit), [load_test_files/1]).
 :- use_module(library(settings), [setting/4, setting/2]).
 
@@ -73,6 +73,15 @@ main :-
     format('Clauses not covered:~t~d~40|~n', [SumNotCovered]),
     format('Failed clauses in files:~t~d~40|~n', [SumFailedInFile]),
     format('Number of files:~t~d~40|~n', [Count]),
+    forall(member(Rel-Cover, Covers),
+           (   json_write_dict(
+                   current_output,
+                   _{  rel:Rel,
+                       cover:Cover
+                    }, [width(0)]
+               ),
+               nl
+           )),
     (   SumInFile > 0
     ->  NotCoveredPercent is 100 * SumNotCovered / SumInFile,
         FailedInFilePercent is 100 * SumFailedInFile / SumInFile,
