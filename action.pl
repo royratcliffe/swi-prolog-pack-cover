@@ -40,6 +40,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 :- use_module(library(http/json), [atom_json_term/3]).
 :- use_module(library(plunit), [load_test_files/1]).
 :- use_module(library(settings), [setting/4, setting/2]).
+:- ensure_loaded(library(http/http_json)).
 
 :- setting(gist_id, atom, env('COVFAIL_GISTID', ''),
            'Covered and failed-in-file Gist identifier').
