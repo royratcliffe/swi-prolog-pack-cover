@@ -47,3 +47,45 @@ jobs:
 
 Note that `uses` requires a repository _and_ repository branch, tag or
 commit reference; actions do _not_ default to the main branch.
+
+## Shield badges
+
+If you set up a Gist, your project can utilise
+[Shields](https://shields.io) to place coverage and failure badges on
+your project's README page. Set up two repository secrets for your
+actions; see variables below. Create a new Gist, a public one. Note its
+Gist identifier. You also need a GitHub personal-access token with
+_Create gists_ permissions.
+
+  * Variable `COVFAIL_GISTID` for the Gist identifier.
+  * Variable `GHAPI_PAT` for the private token.
+
+The action only updates the shield on *one* selected operating system,
+defaulting to Linux. Ubuntu Linux runs the development version of Prolog
+so the shield images reflect coverage performance using the latest
+odd-minor release. You also need to set up the environment for the
+coverage step.
+
+```yaml
+      - uses: royratcliffe/swi-prolog-pack-cover@main
+        env:
+          GHAPI_PAT: ${{ secrets.GHAPI_PAT }}
+          COVFAIL_GISTID: ${{ secrets.COVFAIL_GISTID }}
+```
+
+Add links to your README file as below, albeit after replacing the
+organisation and Gist identifier with your own.
+
+```markdown
+![cov](https://shields.io/endpoint?url=https://gist.githubusercontent.com/royratcliffe/ccccef2ac1329551794f2a466ee61014/raw/cov.json)
+![fail](https://shields.io/endpoint?url=https://gist.githubusercontent.com/royratcliffe/ccccef2ac1329551794f2a466ee61014/raw/fail.json)
+```
+
+## No symbolic linking
+
+Installing the pack involves building it using compiler tools if the
+pack includes foreign libraries. SWI-Prolog cleverly uses symbol links
+when installing a pack on those operating systems that support it;
+includes macOS and Linux. Important _not_ to link the pack. The default
+`link(true)` complicates coverage-by-file filtering because it compares
+source file paths relative to the installed pack directory.
