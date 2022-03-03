@@ -228,7 +228,6 @@ dirty_predicate(user:_/_) :- !.
 dirty_predicate(plunit:_/_) :- !.
 dirty_predicate(prolog_cover:_/_) :- !.
 dirty_predicate(_:'unit test'/_).
-dirty_predicate(_:'unit body'/_).
 
 %!  subdir(+Dir, +File, -Rel) is semidet.
 %
