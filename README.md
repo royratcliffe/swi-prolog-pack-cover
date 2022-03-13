@@ -15,7 +15,7 @@ Too long, won't read! In short, apply the following guidelines to your
 pack project repository on GitHub.
 
 Copy and paste the following YAML to your pack project at
-`.github/workflows/pack-cover.yaml` or `test.yaml` and commit the change. You will
+`.github/workflows/test.yaml` and commit the change. You will
 immediately see GitHub spool up runners for macOS, Windows and Ubuntu at
 the same time. After checking out your project repository, the runners
 will then proceed to install SWI-Prolog either using Homebrew,
