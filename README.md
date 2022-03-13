@@ -102,7 +102,12 @@ organisation and Gist identifier with your own.
 
 The Prolog coverage analyses the number of failed clauses. This is *not* an entirely useful metric since some tests purposefully check for failure. Raising an exception fails a predicate and triggers a count within the failed-in-file tally and its derived percentage figure. Failed clauses do not directly indicate a problem.
 
-The solution inverts the colours for the fail shield: green for low percentage, red for high. A project with a high coverage and low failure shows green by green.
+The solution inverts the colours for the fail shield: green for low percentage,
+red for high. A project with a high coverage and low failure shows green by
+green. Although an argument for *not* including the _fail_ percentage in the
+shield badges on the project repository page exists; it might mislead the casual
+observer. Either that, or arrange for tests to never fail. Catch the failure
+instead and complete the unit-test body for zero clause failures.
 
 ## No symbolic linking
 
