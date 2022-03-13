@@ -113,13 +113,18 @@ shield_files(Pairs, json(Files)) :- maplist(shield_file, Pairs, Files).
 shield_file(Label-Percent, File=json([content=Content])) :-
     atom_concat(Label, '.json', File),
     format(atom(Message), '~1f%', [Percent]),
-    shield_color(Percent, Color),
+    shield_color(Label, Percent, Color),
     atom_json_term(Content, json([ schemaVersion=1,
                                    label=Label,
                                    message=Message,
                                    color=Color
                                  ]), []),
     format('raw/~s~n', [File]).
+
+shield_color(fail, Percent0, Color) =>
+    Percent is 100 - Percent0,
+    shield_color(Percent, Color).
+shield_color(_, Percent, Color) => shield_color(Percent, Color).
 
 shield_color(Percent, red) :- Percent < 20, !.
 shield_color(Percent, orange) :- Percent < 40, !.

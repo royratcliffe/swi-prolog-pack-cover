@@ -15,7 +15,7 @@ Too long, won't read! In short, apply the following guidelines to your
 pack project repository on GitHub.
 
 Copy and paste the following YAML to your pack project at
-`.github/workflows/pack-cover.yaml` and commit the change. You will
+`.github/workflows/test.yaml` and commit the change. You will
 immediately see GitHub spool up runners for macOS, Windows and Ubuntu at
 the same time. After checking out your project repository, the runners
 will then proceed to install SWI-Prolog either using Homebrew,
@@ -30,7 +30,7 @@ on:
   pull_request:
     branches: [main, master]
 
-name: Pack install and test with coverage
+name: test
 
 jobs:
   run-tests:
@@ -46,7 +46,26 @@ jobs:
 ```
 
 Note that `uses` requires a repository _and_ repository branch, tag or
-commit reference; actions do _not_ default to the main branch.
+commit reference; actions do _not_ default to the main branch. Name the
+workflow for the workflow-passing shield.
+
+## Action logs
+
+The following snippet from the Ubuntu action log shows the summary statistics
+along with other useful diagnostic messages.
+```
+Clauses in files:                      2
+Clauses not covered:                   0
+Failed clauses in files:               1
+Number of files:                       1
+{"cover": {"failed_in_file":1, "in_file":2, "not_covered":0}, "rel":"msgpackc/prolog/msgpackc.pl"}
+Not covered:                    0.000000%
+Failed in file:                50.000000%
+Covered:                      100.000000%
+raw/cov.json
+raw/fail.json
+```
+Note the raw JSON lines at the end. They indicate successful shield Gist updates.
 
 ## Shield badges
 
@@ -77,9 +96,26 @@ Add links to your README file as below, albeit after replacing the
 organisation and Gist identifier with your own.
 
 ```markdown
+[![test](https://github.com/royratcliffe/msgpackc-prolog/actions/workflows/test.yaml/badge.svg)](https://github.com/royratcliffe/msgpackc-prolog/actions/workflows/test.yaml)
 ![cov](https://shields.io/endpoint?url=https://gist.githubusercontent.com/royratcliffe/ccccef2ac1329551794f2a466ee61014/raw/cov.json)
 ![fail](https://shields.io/endpoint?url=https://gist.githubusercontent.com/royratcliffe/ccccef2ac1329551794f2a466ee61014/raw/fail.json)
 ```
+
+## Failed in file
+
+The Prolog coverage analyses the number of failed clauses. This is *not*
+an entirely useful metric since some tests purposefully check for
+failure. Raising an exception fails a predicate and triggers a count
+within the failed-in-file tally and its derived percentage figure.
+Failed clauses do not directly indicate a problem.
+
+The solution inverts the colours for the fail shield: green for low
+percentage, red for high. A project with a high coverage and low failure
+shows green by green. Although an argument for *not* including the
+_fail_ percentage in the shield badges on the project repository page
+exists; it might mislead the casual observer. Either that, or arrange
+for tests to never fail. Catch the failure instead and complete the
+unit-test body for zero clause failures.
 
 ## No symbolic linking
 
