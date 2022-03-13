@@ -48,6 +48,21 @@ jobs:
 Note that `uses` requires a repository _and_ repository branch, tag or
 commit reference; actions do _not_ default to the main branch. Name the workflow for the workflow-passing shield.
 
+## Action logs
+
+```
+Clauses in files:                      2
+Clauses not covered:                   0
+Failed clauses in files:               1
+Number of files:                       1
+{"cover": {"failed_in_file":1, "in_file":2, "not_covered":0}, "rel":"msgpackc/prolog/msgpackc.pl"}
+Not covered:                    0.000000%
+Failed in file:                50.000000%
+Covered:                      100.000000%
+raw/cov.json
+raw/fail.json
+```
+Note the raw JSON lines at the end. They indicate successful shield Gist updates.
 
 ## Shield badges
 
