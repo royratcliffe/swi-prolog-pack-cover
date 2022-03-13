@@ -15,7 +15,7 @@ Too long, won't read! In short, apply the following guidelines to your
 pack project repository on GitHub.
 
 Copy and paste the following YAML to your pack project at
-`.github/workflows/pack-cover.yaml` and commit the change. You will
+`.github/workflows/pack-cover.yaml` or `test.yaml` and commit the change. You will
 immediately see GitHub spool up runners for macOS, Windows and Ubuntu at
 the same time. After checking out your project repository, the runners
 will then proceed to install SWI-Prolog either using Homebrew,
@@ -30,7 +30,7 @@ on:
   pull_request:
     branches: [main, master]
 
-name: Pack install and test with coverage
+name: test
 
 jobs:
   run-tests:
@@ -46,7 +46,8 @@ jobs:
 ```
 
 Note that `uses` requires a repository _and_ repository branch, tag or
-commit reference; actions do _not_ default to the main branch.
+commit reference; actions do _not_ default to the main branch. Name the workflow for the workflow-passing shield.
+
 
 ## Shield badges
 
