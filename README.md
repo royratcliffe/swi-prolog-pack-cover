@@ -1,13 +1,19 @@
 # GitHub action for SWI-Prolog pack installation with test coverage
 
-Why is this GitHub action repository useful? You can use it to perform
-continuous development and integration on GitHub while running tests
-simultaneously against macOS, Windows and Ubuntu Linux operating systems
-across the latest stable and development versions of SWI-Prolog. This
-may not matter if you run tests locally and target your own particular
-platform. Other pack users may be running on a different operating
-system however and encounter issues when installing; especially so if
-your pack incorporates foreign libraries.
+This GitHub action is designed for use when developing [SWI
+Prolog](https://www.swi-prolog.org/) packages on GitHub, especially for
+packages that incorporate C-based _foreign_ libraries. It simultaneously
+compiles your Prolog pack project for all major platforms: macOS, Ubuntu
+and Windows; it runs all tests with coverage and optionally updates a
+Gist for automatic display of coverage shields.
+
+Use it to perform continuous development and integration on GitHub while
+running tests simultaneously against macOS, Windows and Ubuntu Linux
+operating systems across the latest stable and development versions of
+SWI-Prolog. This may not matter if you run tests locally and target your
+own particular platform. Other pack users may be running on a different
+operating system however and encounter issues when installing;
+especially so if your pack incorporates C libraries.
 
 ## Usage
 
@@ -20,7 +26,7 @@ immediately see GitHub spool up runners for macOS, Windows and Ubuntu at
 the same time. After checking out your project repository, the runners
 will then proceed to install SWI-Prolog either using Homebrew,
 Chocolatey or APT depending on the runner's operating system. The pack
-will install, run tests with captured coverage statistics. You can see
+will install, then run tests with captured coverage statistics. You can see
 the normal SWI-Prolog coverage report in the runner job logs.
 
 ```yaml
@@ -47,7 +53,8 @@ jobs:
 
 Note that `uses` requires a repository _and_ repository branch, tag or
 commit reference; actions do _not_ default to the main branch. Name the
-workflow for the workflow-passing shield.
+workflow for the workflow-passing shield; naming it "test" means that
+the green shield will report "test: passing."
 
 ## Action logs
 
@@ -82,8 +89,8 @@ _Create gists_ permissions.
 The action only updates the shield on *one* selected operating system,
 defaulting to Linux. Ubuntu Linux runs the development version of Prolog
 so the shield images reflect coverage performance using the latest
-odd-minor release. You also need to set up the environment for the
-coverage step.
+odd-minor release of SWI-Prolog. You also need to set up the environment
+for the coverage step.
 
 ```yaml
       - uses: royratcliffe/swi-prolog-pack-cover@main
@@ -120,7 +127,7 @@ unit-test body for zero clause failures.
 ## No symbolic linking
 
 Installing the pack involves building it using compiler tools if the
-pack includes foreign libraries. SWI-Prolog cleverly uses symbol links
+pack includes foreign libraries. SWI-Prolog cleverly uses symbolic links
 when installing a pack on those operating systems that support it;
 includes macOS and Linux. Important _not_ to link the pack. The default
 `link(true)` complicates coverage-by-file filtering because it compares
