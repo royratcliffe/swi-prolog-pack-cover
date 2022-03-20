@@ -29,3 +29,6 @@ runs:
     - name: Run tests with coverage
       run: swipl -s "${{ github.action_path }}/action.pl"
       shell: bash
+branding:
+  icon: 'check-circle'
+  color: 'green'
