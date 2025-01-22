@@ -34,7 +34,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 :- use_module(library(ordsets),
               [ord_intersect/2, ord_intersection/3, ord_subtract/3]).
 :- use_module(library(prolog_pack), [pack_property/2]).
-:- use_module(library(test_cover), [show_coverage/1]).
+:- use_module(library(prolog_coverage), [show_coverage/1]).
 :- use_module(library(url), [parse_url/2]).
 :- use_module(library(http/http_client), [http_get/3]).
 :- use_module(library(http/json), [atom_json_term/3, json_write_dict/3]).
@@ -163,11 +163,11 @@ cover(Goal, Dir, Covers) :-
 
 cover_subdir(Dir, File-Cover, Rel-Cover) :- subdir(Dir, File, Rel).
 
-cover(Goal, Covers) :- show_coverage(covered(Goal, Covers)).
+cover(Goal, Covers) :- coverage(covered(Goal, Covers), []).
 
 covered(Goal, Covers) :-
     call(Goal),
-    prolog_cover:covered(Succeeded, Failed),
+    prolog_coverage:covered(Succeeded, Failed),
     findall(Cover, file_cover(Succeeded, Failed, Cover), Covers).
 
 %!  file_cover(Succeeded, Failed, FileCover:pair(atom, dict)) is nondet.
@@ -188,7 +188,7 @@ file_cover(File, Succeeded, Failed,
                not_covered:NotCoveredLength,
                failed_in_file:FailedInFileLength
            }) :-
-    findall(Clause, prolog_cover:clause_source(Clause, File, _), InFile0),
+    findall(Clause, prolog_coverage:clause_source(Clause, File, _), InFile0),
     sort(InFile0, InFile),
     (   ord_intersect(InFile, Succeeded)
     ->  true
@@ -216,7 +216,7 @@ file_cover(File, Succeeded, Failed,
 %   coverage percentage.
 
 clean(Clauses, Length) :-
-    prolog_cover:clean_set(Clauses, CleanClauses0),
+    prolog_coverage:clean_set(Clauses, CleanClauses0),
     exclude(is_dirty, CleanClauses0, CleanClauses),
     length(CleanClauses, Length).
 
@@ -226,7 +226,7 @@ is_dirty(Clause) :-
 
 dirty_predicate(user:_/_) :- !.
 dirty_predicate(plunit:_/_) :- !.
-dirty_predicate(prolog_cover:_/_) :- !.
+dirty_predicate(prolog_coverage:_/_) :- !.
 dirty_predicate(_:'unit test'/_).
 
 %!  subdir(+Dir, +File, -Rel) is semidet.
