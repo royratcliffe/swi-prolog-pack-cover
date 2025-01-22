@@ -91,7 +91,8 @@ main :-
         format('Covered:~t~f~40|%~n', [CoveredPercent]),
         shield(CoveredPercent, FailedInFilePercent)
     ;   true
-    ).
+    ),
+    !.
 
 shield(Cov, Fail) :-
     setting(runner_os, RunnerOS),
