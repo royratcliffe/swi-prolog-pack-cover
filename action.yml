@@ -27,7 +27,7 @@ runs:
       run: swipl -t "pack_install(., [interactive(false), link(false)])"
       shell: bash
     - name: Run tests with coverage
-      run: swipl -s "${{ github.action_path }}/action.pl"
+      run: swipl -g "debug(_>'/proc/self/fd/2')" -g debugging -s "${{ github.action_path }}/action.pl"
       shell: bash
 branding:
   icon: 'check-circle'
