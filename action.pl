@@ -103,10 +103,11 @@ shield(Cov, Fail) :-
 
 shield(Cov, Fail, Reply) :-
     setting(gist_id, GistID),
-    GistID \== '',
-    !,
-    shield_files([cov-Cov, fail-Fail], Files),
-    ghapi_update_gist(GistID, json(json([files=Files])), Reply, []).
+    (   GistID == ''
+    ->  true
+    ;   shield_files([cov-Cov, fail-Fail], Files),
+        ghapi_update_gist(GistID, json(json([files=Files])), Reply, [])
+    ).
 
 shield_files(Pairs, json(Files)) :- maplist(shield_file, Pairs, Files).
 
